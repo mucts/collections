@@ -4,6 +4,8 @@ namespace MuCTS\Collections;
 
 use ArrayAccess;
 use ArrayIterator;
+use Closure;
+use InvalidArgumentException;
 use MuCTS\Collections\Traits\EnumeratesValues;
 use MuCTS\Contracts\Collections\Enumerable;
 use MuCTS\Contracts\Collections\Collection as CollectionContract;
@@ -13,6 +15,9 @@ use stdClass;
 class Collection implements ArrayAccess, Enumerable, CollectionContract
 {
     use EnumeratesValues, Macroable;
+
+    /** @var array 排序规则 */
+    protected array $multiSort = [];
 
     /**
      * The items contained in the collection.
@@ -310,7 +315,7 @@ class Collection implements ArrayAccess, Enumerable, CollectionContract
      * Get the comparison function to detect duplicates.
      *
      * @param bool $strict
-     * @return \Closure
+     * @return Closure
      */
     protected function duplicateComparator($strict)
     {
@@ -871,7 +876,7 @@ class Collection implements ArrayAccess, Enumerable, CollectionContract
      * @param int|null $number
      * @return static|mixed
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function random($number = null)
     {
@@ -1108,11 +1113,12 @@ class Collection implements ArrayAccess, Enumerable, CollectionContract
      * Sort the collection using the given callback.
      *
      * @param callable|string $callback
+     * @param bool $sorting
      * @param int $options
      * @param bool $descending
      * @return static
      */
-    public function sortBy($callback, $options = SORT_REGULAR, $descending = false)
+    public function sortBy($callback, $sorting = true, $options = SORT_REGULAR, $descending = false)
     {
         $results = [];
 
@@ -1125,29 +1131,35 @@ class Collection implements ArrayAccess, Enumerable, CollectionContract
             $results[$key] = $callback($value, $key);
         }
 
-        $descending ? arsort($results, $options)
-            : asort($results, $options);
+        array_push($this->multiSort, $results, $descending ? SORT_DESC : SORT_ASC, $options);
+        if (!$sorting) {
+            return $this;
+        }
+        $keys = array_keys($results);
+        $this->multiSort[] = &$keys;
+        $collects = new static();
 
         // Once we have sorted all of the keys in the array, we will loop through them
         // and grab the corresponding model so we can set the underlying items list
         // to the sorted version. Then we'll just return the collection instance.
-        foreach (array_keys($results) as $key) {
-            $results[$key] = $this->items[$key];
+        foreach ($keys as $key) {
+            $collects->push($this->items[$key]);
         }
 
-        return new static($results);
+        return $collects;
     }
 
     /**
      * Sort the collection in descending order using the given callback.
      *
      * @param callable|string $callback
+     * @param bool $sorting
      * @param int $options
      * @return static
      */
-    public function sortByDesc($callback, $options = SORT_REGULAR)
+    public function sortByDesc($callback, $sorting = true, $options = SORT_REGULAR)
     {
-        return $this->sortBy($callback, $options, true);
+        return $this->sortBy($callback, $sorting, $options, true);
     }
 
     /**
