@@ -1137,6 +1137,7 @@ class Collection implements ArrayAccess, Enumerable, CollectionContract
         }
         $keys = array_keys($results);
         $this->multiSort[] = &$keys;
+        call_user_func_array('array_multisort', $this->multiSort);
         $collects = new static();
 
         // Once we have sorted all of the keys in the array, we will loop through them
