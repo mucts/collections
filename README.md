@@ -81,3 +81,21 @@ $unique->values()->all();
     ]
 */
 ```
+
+- 获取集合中给定键对应的所有值`pluck()`
+
+```php
+
+$collection = collect([
+    ['product_id' => 'prod-100', 'name' => 'Desk'],
+    ['product_id' => 'prod-200', 'name' => 'Chair'],
+]);
+$plucked = $collection->pluck('name');
+$plucked->all();
+// ['Desk', 'Chair']
+
+// 第二个参数为返回数组的键
+$plucked = $collection->pluck('name', 'product_id');
+$plucked->all();
+// ['prod-100' => 'Desk', 'prod-200' => 'Chair']
+```
