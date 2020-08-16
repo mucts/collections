@@ -1,0 +1,23 @@
+{
+    "name": "mucts/collections",
+    "description": "Subtree split of the Array Collections component.",
+    "type": "library",
+    "require": {
+        "php": "^7.4",
+        "ext-json": "^7.4",
+        "mucts/contracts": "^1.0",
+        "mucts/macroable": "^1.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "herry",
+            "email": "yuandeng@aliyun.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "MuCTS\\Collections\\": "src/"
+        }
+    }
+}
